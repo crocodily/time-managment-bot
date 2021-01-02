@@ -3,6 +3,10 @@ version: '3.3'
 volumes:
   postgres_data:
 
+networks:
+  backend:
+    driver: bridge
+
 services:
   code:
     container_name: code
@@ -19,6 +23,10 @@ services:
       PG_PASS: ${PG_DB_PASS}
     depends_on:
       - pg
+    ports:
+    - 8080:8080
+    networks:
+      - backend
 
   pg:
     container_name: pg
@@ -28,3 +36,5 @@ services:
     - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ${PG_DB_PASS}
+    networks:
+      - backend

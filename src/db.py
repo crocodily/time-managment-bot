@@ -1,4 +1,5 @@
 import os
+from asyncio import sleep
 from typing import List
 
 import sqlalchemy as sa
@@ -20,15 +21,20 @@ cron_task = sa.Table(
     'cron_task',
     _metadata,
     sa.Column('id', sa.Integer, primary_key=True),
-    sa.Column('val', sa.String(255)),
+    sa.Column('name', sa.String(255)),
+    sa.Column('args', sa.String(255)),
+    sa.Column('time_args', sa.String(255)),
 )
 
 _tables_create_sql.append(
     """
     CREATE TABLE cron_task (
         id serial PRIMARY KEY,
-        val varchar(255))
-"""
+        name varchar(50),
+        args varchar(250),
+        time_args varchar(250)
+        )
+    """
 )
 
 
@@ -42,19 +48,17 @@ def _make_url(user: str, password: str, host: str, name: str, port: int = 5432) 
     return f'postgresql://{user}:{password}@{host}:{port}/{name}'
 
 
-async def main() -> None:
+async def get_db_engine() -> Engine:
+    await sleep(7)
     url = _make_url(port=5432, name=_DATABASE, **db_env)
     new_database: bool = not database_exists(url)
     if new_database:
         create_database(url)
 
-    async with create_engine(
+    engine = await create_engine(
         database=_DATABASE,
         **db_env,
-    ) as engine:
-        if new_database:
-            await _create_tables(tables_create_sql=_tables_create_sql, engine=engine)
-        async with engine.acquire() as conn:
-            await conn.execute("insert into cron_task values (1, 'кек')")
-            async for item in conn.execute('select * from cron_task'):
-                print(item.id, item.val)
+    )
+    if new_database:
+        await _create_tables(tables_create_sql=_tables_create_sql, engine=engine)
+    return engine
