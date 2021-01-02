@@ -1,0 +1,30 @@
+version: '3.3'
+
+volumes:
+  postgres_data:
+
+services:
+  code:
+    container_name: code
+    restart: "no"
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+    - ${LOCAL_DIR}/src:/src
+    environment:
+      PG_HOST: ${PG_HOST:-pg}
+      PG_PORT: ${PG_PORT:-5432}
+      PG_USER: ${PG_USER:-postgres}
+      PG_PASS: ${PG_DB_PASS}
+    depends_on:
+      - pg
+
+  pg:
+    container_name: pg
+    image: postgres:13.1
+    restart: "no"
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${PG_DB_PASS}
