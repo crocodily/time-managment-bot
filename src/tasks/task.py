@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Callable, Dict, List
 
 from aiopg.sa import Engine
@@ -19,6 +20,7 @@ async def _insert_task_to_db(
                 name=function_name, args=args_in_json, time_args=time_args
             )
         )
+        logging.debug(f'Задача {function_name} записана в БД')
 
 
 def _start_task(
@@ -29,6 +31,7 @@ def _start_task(
     job = eval(f'job.{time_args}')  # pylint: disable=W0123
     job.go(function, **args)
     scheduler.add_job(job)
+    logging.debug(f'Задача {function.__name__} добавлена в scheduler async_cron')
 
 
 async def create_task(
@@ -36,6 +39,7 @@ async def create_task(
 ) -> None:
     await _insert_task_to_db(db, function.__name__, args, time_args)
     _start_task(scheduler, function, args, time_args)
+    logging.info(f'Создана задача {function.__name__}')
 
 
 def _parse_task(task: Dict) -> Dict:
@@ -61,6 +65,8 @@ async def recreate_tasks(db: Engine, scheduler: Scheduler) -> None:
         return
     for task in tasks:
         _restart_task(task, scheduler)
+        logging.debug(f'Перезапущена задача {task}')
+    logging.info(f'Перезапущены {len(tasks)} задачи из БД')
 
 
 async def _get_tasks(db: Engine) -> List[Dict]:

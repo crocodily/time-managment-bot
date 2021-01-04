@@ -1,0 +1,34 @@
+version: 1
+
+
+root:
+  level:    DEBUG
+  handlers: [console]
+
+
+disable_existing_loggers: false
+
+loggers:
+  aiohttp:
+    level: INFO
+  aiohttp_apiset:
+    level: ERROR
+  asyncio:
+    level: ERROR
+  sqlalchemy:
+    level: ERROR
+  async_cron:
+    level: ERROR
+
+
+handlers:
+  # Базовый хендлер, уровень логирования переопределяется переменной окружени LOG_LEVEL (по умолчанию INFO)
+  console:
+    class:     logging.StreamHandler
+    formatter: json
+    level:     DEBUG
+    stream:    ext://sys.stdout
+
+formatters:
+  json:
+    class:     src.logging.formatter.JsonFormatter

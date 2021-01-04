@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import AsyncGenerator
 
 from aiohttp import web
@@ -37,6 +38,7 @@ async def start_api(app: Application):
 
 
 def main():
+    logging.info('App startup')
     loop = asyncio.get_event_loop()
     app = web.Application()
     app['scheduler'] = Scheduler()

@@ -1,5 +1,8 @@
+import logging
+
+
 def test() -> None:
-    print(1, flush=True)
+    logging.info(str(1))
 
 
 handlers = {'test': test}
