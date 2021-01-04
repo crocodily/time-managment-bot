@@ -1,7 +1,7 @@
 CODE = src
 TESTS = tests
 
-ALL = $(CODE)
+ALL = $(CODE) $(TESTS)
 
 VENV ?= .venv
 
