@@ -1,0 +1,36 @@
+body {
+    font-family: Roboto, sans-serif;
+    text-align: center;
+    background-color: #fcfcfc;
+}
+
+.container {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px;
+    background: white;
+    min-height: calc(100vh - 20px);
+    box-shadow: 0 0 30px 5px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+    font-weight: normal;
+    margin-top: 40px;
+    font-size: 32px;
+    color: #545454;
+}
+
+.date {
+    font-weight: normal;
+    margin-top: 20px;
+    font-size: 20px;
+    color: #929292;
+}
+
+.chart-container {
+    box-sizing: border-box;
+    width: 90%;
+    margin: 10% auto;
+}
