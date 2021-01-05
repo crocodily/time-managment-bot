@@ -55,6 +55,7 @@ def main():
     app.cleanup_ctx.append(session)
     app.cleanup_ctx.append(pg_engine)
     loop.run_until_complete(start_api(app))
+    logging.info('Ready to accept connections')
     loop.run_until_complete(app['scheduler'].start())
 
 

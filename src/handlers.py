@@ -12,15 +12,15 @@ from src.tasks.task import create_task
 # пример использования
 async def handler_example(request: Request) -> Response:
     await create_task(
-        request.app['engine'],
-        request.app['scheduler'],
-        handlers['test'],
-        dict(
+        db=request.app['engine'],
+        scheduler=request.app['scheduler'],
+        function=handlers['test'],
+        args=dict(
             user_name='nesb1',
-            session=request.app['session'],
             access_token='8a9c47d43ed9259eaa170773714b052334b56a53',
         ),
-        'every(5).second',
+        time_args='every(5).second',
+        session=request.app['session'],
     )
     return Response(text='123', status=200)
 
