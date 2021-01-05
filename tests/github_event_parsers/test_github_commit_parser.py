@@ -30,5 +30,5 @@ async def test_commit_time_shapes_correctly(push_event, mocker):
     )
     created_at = datetime(1999, 12, 24, 12, 0)
     patched_get_commit_func.return_value = created_at
-    res = await CommitParser(push_event, ClientSession()).parse()
+    res = await CommitParser(push_event, ClientSession(), '').parse()
     assert [UserActivity(f'{USER_ACTIVITY} CommitEvent', created_at, created_at)] == res

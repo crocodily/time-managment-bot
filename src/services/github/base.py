@@ -37,7 +37,7 @@ class GithubEvent(BaseModel):
 
 class GithubEventParser(ABC):
     def __init__(self, event: GithubEvent):
-        self.event = event
+        self._event = event
 
     @abstractmethod
     async def parse(self) -> List[UserActivity]:

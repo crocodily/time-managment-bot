@@ -2,6 +2,7 @@ import json
 import logging
 from typing import Callable, Dict, List
 
+from aiohttp import ClientSession
 from aiopg.sa import Engine
 from async_cron.job import CronJob
 from async_cron.schedule import Scheduler
@@ -14,12 +15,15 @@ async def _insert_task_to_db(
     db: Engine, function_name: str, args: Dict, time_args: str
 ) -> None:
     async with db.acquire() as conn:
+        session = args.pop('session', None)
+        engine = args.pop('engine', None)
         args_in_json = json.dumps(args)
         await conn.execute(
             cron_task.insert().values(  # pylint: disable=E1120
                 name=function_name, args=args_in_json, time_args=time_args
             )
         )
+        args.update({'session': session, 'engine': engine})
         logging.debug(f'Задача {function_name} записана в БД')
 
 
@@ -42,14 +46,19 @@ async def create_task(
     logging.info(f'Создана задача {function.__name__}')
 
 
-def _parse_task(task: Dict) -> Dict:
+def _parse_and_update_task(task: Dict, session: ClientSession, db: Engine) -> Dict:
     args = json.loads(task.pop('args'))
+    # добавляем параметры контекста
+    args['session'] = session
+    args['engine'] = db
     task['args'] = args
     return task
 
 
-def _restart_task(task: Dict, scheduler: Scheduler) -> None:
-    parsed_task = _parse_task(task)
+def _restart_task(
+    task: Dict, scheduler: Scheduler, session: ClientSession, db: Engine
+) -> None:
+    parsed_task = _parse_and_update_task(task, session, db)
     func = handlers[parsed_task['name']]
     _start_task(
         scheduler,
@@ -59,12 +68,14 @@ def _restart_task(task: Dict, scheduler: Scheduler) -> None:
     )
 
 
-async def recreate_tasks(db: Engine, scheduler: Scheduler) -> None:
+async def recreate_tasks(
+    db: Engine, scheduler: Scheduler, session: ClientSession
+) -> None:
     tasks = await _get_tasks(db)
     if not tasks:
         return
     for task in tasks:
-        _restart_task(task, scheduler)
+        _restart_task(task, scheduler, session, db)
         logging.debug(f'Перезапущена задача {task}')
     logging.info(f'Перезапущены {len(tasks)} задачи из БД')
 

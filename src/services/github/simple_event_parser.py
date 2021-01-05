@@ -8,8 +8,8 @@ class SimpleEventParser(GithubEventParser):
     async def parse(self) -> List[UserActivity]:
         return [
             UserActivity(
-                f'{USER_ACTIVITY} {self.event.type.value}',
-                self.event.created_at,
-                self.event.created_at,
+                f'{USER_ACTIVITY} {self._event.type.value}',
+                self._event.created_at,
+                self._event.created_at,
             )
         ]

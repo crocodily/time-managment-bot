@@ -21,6 +21,8 @@ services:
       PG_PORT: ${PG_PORT:-5432}
       PG_USER: ${PG_USER:-postgres}
       PG_PASS: ${PG_DB_PASS}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
     depends_on:
       - pg
     ports:

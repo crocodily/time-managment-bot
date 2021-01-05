@@ -1,3 +1,4 @@
+import logging
 import os
 from asyncio import sleep
 from typing import List
@@ -49,6 +50,7 @@ def _make_url(user: str, password: str, host: str, name: str, port: int = 5432) 
 
 
 async def get_db_engine() -> Engine:
+    logging.info('Waiting database startup')
     await sleep(7)
     url = _make_url(port=5432, name=_DATABASE, **db_env)
     new_database: bool = not database_exists(url)
@@ -61,4 +63,5 @@ async def get_db_engine() -> Engine:
     )
     if new_database:
         await _create_tables(tables_create_sql=_tables_create_sql, engine=engine)
+    logging.info('Connection with database established')
     return engine
