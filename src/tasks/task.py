@@ -12,7 +12,7 @@ from src.tasks.handlers import handlers
 
 
 async def _insert_task_to_db(
-        db: Engine, function_name: str, args: Dict, time_args: str
+    db: Engine, function_name: str, args: Dict, time_args: str
 ) -> None:
     async with db.acquire() as conn:
         args_in_json = json.dumps(args)
@@ -25,7 +25,11 @@ async def _insert_task_to_db(
 
 
 def _start_task(
-        scheduler: Scheduler, function: Callable, args: Dict, time_args: str, session: Optional[ClientSession]
+    scheduler: Scheduler,
+    function: Callable,
+    args: Dict,
+    time_args: str,
+    session: Optional[ClientSession],
 ) -> None:
     job = CronJob(function.__name__)  # type: ignore
     # добавляем аргументы из библиотеки CronJob
@@ -35,44 +39,46 @@ def _start_task(
     logging.debug(f'Задача {function.__name__} добавлена в scheduler async_cron')
 
 
-async def create_task(
-        db: Engine, scheduler: Scheduler, function: Callable, args: Dict, time_args: str,
-        session: Optional[ClientSession] = None
+async def create_task(  # pylint: disable=R0913
+    db: Engine,
+    scheduler: Scheduler,
+    function: Callable,
+    args: Dict,
+    time_args: str,
+    session: Optional[ClientSession] = None,
 ) -> None:
     await _insert_task_to_db(db, function.__name__, args, time_args)
     _start_task(scheduler, function, args, time_args, session)
     logging.info(f'Создана задача {function.__name__}')
 
 
-def _parse_and_update_task(task: Dict, session: ClientSession, db: Engine) -> Dict:
+def _parse_and_update_task(task: Dict) -> Dict:
     args = json.loads(task.pop('args'))
     # добавляем параметры контекста
     task['args'] = args
     return task
 
 
-def _restart_task(
-        task: Dict, scheduler: Scheduler, session: ClientSession, db: Engine
-) -> None:
-    parsed_task = _parse_and_update_task(task, session, db)
+def _restart_task(task: Dict, scheduler: Scheduler, session: ClientSession) -> None:
+    parsed_task = _parse_and_update_task(task)
     func = handlers[parsed_task['name']]
     _start_task(
         scheduler=scheduler,
         function=func,
         args=parsed_task['args'],
         time_args=parsed_task['time_args'],
-        session=session
+        session=session,
     )
 
 
 async def recreate_tasks(
-        db: Engine, scheduler: Scheduler, session: ClientSession
+    db: Engine, scheduler: Scheduler, session: ClientSession
 ) -> None:
     tasks = await _get_tasks(db)
     if not tasks:
         return
     for task in tasks:
-        _restart_task(task, scheduler, session, db)
+        _restart_task(task, scheduler, session)
         logging.debug(f'Перезапущена задача {task}')
     logging.info(f'Перезапущены {len(tasks)} задачи из БД')
 

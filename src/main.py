@@ -1,8 +1,11 @@
 import asyncio
 import logging
+import os
 from typing import AsyncGenerator, Callable
 
 import aiohttp
+from aiogram import Bot, Dispatcher
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiohttp import ClientSession, web
 from aiohttp.abc import Application, Request
 from aiohttp.web_middlewares import middleware
@@ -12,6 +15,7 @@ from async_cron.schedule import Scheduler
 from src.db import get_db_engine
 from src.handlers import handle_github_redirect, handler_example
 from src.tasks.task import recreate_tasks
+from src.telebot.handler import init_dispatcher
 
 
 async def session(app: Application) -> AsyncGenerator:
@@ -28,7 +32,15 @@ async def pg_engine(app: Application) -> AsyncGenerator:
     await app['engine'].close()
 
 
-async def start_api(app: Application):
+async def bot(app: Application) -> AsyncGenerator:
+    app['bot'] = Bot(token=os.environ['BOT_TOKEN'])
+    yield
+    # This method's behavior will be changed in aiogram v3.0
+    # сейчас `close` закрывает aiohttp.ClientSession
+    await app['bot'].close()
+
+
+async def start_api(app: Application) -> None:
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, '0.0.0.0', 8080)
@@ -36,7 +48,7 @@ async def start_api(app: Application):
 
 
 @middleware
-async def error_handler_middleware(request: Request, handler: Callable):
+async def error_handler_middleware(request: Request, handler: Callable) -> Response:
     try:
         return await handler(request)
     except Exception as err:  # pylint: disable=W0703
@@ -54,9 +66,25 @@ def main():
     )
     app.cleanup_ctx.append(session)
     app.cleanup_ctx.append(pg_engine)
+    app.cleanup_ctx.append(bot)
     loop.run_until_complete(start_api(app))
+    storage = MemoryStorage()
+    dp = Dispatcher(app['bot'], loop=loop, storage=storage)
+    loop.run_until_complete(init_dispatcher(dp))
+    asyncio.ensure_future(dp.start_polling(), loop=loop)
+    asyncio.ensure_future(app['scheduler'].start())
     logging.info('Ready to accept connections')
-    loop.run_until_complete(app['scheduler'].start())
+
+    try:
+        loop.run_forever()
+
+    except KeyboardInterrupt:
+        logging.info('KeyboardInterrupt')
+        loop.stop()
+
+    loop.close()
+
+    logging.info('Application stopped')
 
 
 if __name__ == '__main__':

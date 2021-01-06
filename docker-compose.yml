@@ -23,6 +23,7 @@ services:
       PG_PASS: ${PG_DB_PASS}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     depends_on:
       - pg
     ports:

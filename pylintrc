@@ -17,6 +17,7 @@ disable=
     R0914, ; Too many local variables (m/n) (too-many-locals)
     E0611, ; No name <name> in module <module> (no-name-in-module)
     W1203, ; Use lazy % formatting in logging functions (logging-fstring-interpolation)
+    fixme,
 # Maximum number of nested code blocks for function / method
 max-nested-blocks=3
 # Maximum number of branch for function / method body

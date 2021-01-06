@@ -25,11 +25,3 @@ format:
 	$(VENV)/bin/black --skip-string-normalization $(ALL)
 	$(VENV)/bin/autoflake --recursive --in-place --remove-all-unused-imports $(ALL)
 	$(VENV)/bin/unify --in-place --recursive $(ALL)
-
-up: 
-	uvicorn $(CODE).app:app --host=0.0.0.0 --reload
-
-
-
-build:
-	docker-compose build code

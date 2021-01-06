@@ -15,6 +15,7 @@ PyYAML = "^5.3.1"
 pydantic = "^1.7.3"
 pytest-mock = "^3.4.0"
 pytest-asyncio = "^0.14.0"
+aiogram = "^2.11.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

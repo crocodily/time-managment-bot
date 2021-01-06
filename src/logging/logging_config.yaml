@@ -19,6 +19,8 @@ loggers:
     level: ERROR
   async_cron:
     level: ERROR
+  aiogram:
+    level: ERROR
 
 
 handlers:

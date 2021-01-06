@@ -1,5 +1,5 @@
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 
-class StateSetAccounts(StatesGroup):
-    account = State()
+class InitialStates(StatesGroup):
+    time_for_report = State()
