@@ -52,5 +52,5 @@ let data = [
         activityName: 'Testing test',
         fromTime: new Date('2021-01-05T08:00:00Z'),
         toTime: new Date('2021-01-05T16:00:00Z')
-    },
+    }
 ]

@@ -8,6 +8,7 @@ let options = {
     grid: gridSettings,
     xaxis: xAxisSettings,
     legend: legendSettings,
+    tooltip: tooltipSettings,
     id: chartId
 };
 

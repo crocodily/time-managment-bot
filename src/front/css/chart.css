@@ -34,3 +34,7 @@ body {
     width: 90%;
     margin: 10% auto;
 }
+
+.apexcharts-tooltip {
+    padding: 5px;
+}
