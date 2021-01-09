@@ -1,3 +1,4 @@
+import logging
 import os
 from http import HTTPStatus
 
@@ -5,6 +6,7 @@ from aiohttp import ClientSession
 from aiohttp.abc import Request
 from aiohttp.web_response import Response
 
+from src.services.error import ApiError
 from src.tasks.handlers import handlers
 from src.tasks.task import create_task
 
@@ -37,11 +39,31 @@ async def handle_github_redirect(request: Request) -> Response:
         'https://github.com/login/oauth/access_token', params=query
     ) as response:
         if response.status != HTTPStatus.OK:
-            raise RuntimeError(
-                'Произошла ошибка при попытке получить github access_token'
+            raise ApiError(
+                'Произошла ошибка при попытке получить github access_token',
+                await response.text(),
             )
     return Response(status=HTTPStatus.NO_CONTENT)
 
 
-# aiogram Должен отдать ту ссылку
-# https://github.com/login/oauth/authorize?client_id={client_id}&redirect_uri=http://127.0.0.1:8080/github_auth
+async def handle_vk_redirect(request: Request) -> Response:
+    query_params = {
+        'client_id': os.environ['VK_CLIENT_ID'],
+        'client_secret': os.environ['VK_CLIENT_SECRET'],
+        'redirect_uri': f'{os.environ["HOST"]}/vk_auth',
+        'code': request.query['code'],
+    }
+    session: ClientSession = request.app['session']
+    async with session.get(
+        'https://oauth.vk.com/access_token', params=query_params
+    ) as response:
+        if response.status != HTTPStatus.OK:
+            raise ApiError(
+                'Произошла ошибка при попытке поулчить vk access_token',
+                await response.text(),
+            )
+        logging.info(await response.json())
+    return Response(
+        status=HTTPStatus.OK,
+        text='Авторизация успешно выполнена, можете вернуться обратно в telegram',
+    )

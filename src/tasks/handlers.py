@@ -4,6 +4,7 @@ from typing import Any
 from aiohttp import ClientSession
 
 from src.services.github.github import get_github_activity
+from src.services.vk.vk import get_users_online_status
 
 
 async def test(
@@ -13,4 +14,4 @@ async def test(
     logging.info(res)
 
 
-handlers = {'test': test}
+handlers = {'test': test, 'vk_online_checker': get_users_online_status}

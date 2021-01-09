@@ -13,7 +13,7 @@ from aiohttp.web_response import Response
 from async_cron.schedule import Scheduler
 
 from src.db import get_db_engine
-from src.handlers import handle_github_redirect, handler_example
+from src.handlers import handle_github_redirect, handle_vk_redirect, handler_example
 from src.tasks.task import recreate_tasks
 from src.telebot.handler import init_dispatcher
 
@@ -43,7 +43,7 @@ async def bot(app: Application) -> AsyncGenerator:
 async def start_api(app: Application) -> None:
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    site = web.TCPSite(runner, '0.0.0.0', 80)
     await site.start()
 
 
@@ -62,7 +62,11 @@ def main():
     app = web.Application()
     app['scheduler'] = Scheduler()
     app.add_routes(
-        [web.get('/', handler_example), web.get('/github_auth', handle_github_redirect)]
+        [
+            web.get('/', handler_example),
+            web.get('/github_auth', handle_github_redirect),
+            web.get('/vk_auth', handle_vk_redirect),
+        ]
     )
     app.cleanup_ctx.append(session)
     app.cleanup_ctx.append(pg_engine)
