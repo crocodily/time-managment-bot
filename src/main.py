@@ -13,7 +13,8 @@ from aiohttp.web_response import Response
 from async_cron.schedule import Scheduler
 
 from src.db import get_db_engine
-from src.handlers import handle_github_redirect, handle_vk_redirect, handler_example
+from src.handlers.github import auth_github, handle_github_redirect
+from src.handlers.vk import auth_vk, handle_vk_redirect
 from src.tasks.task import recreate_tasks
 from src.telebot.handler import init_dispatcher
 
@@ -51,9 +52,9 @@ async def start_api(app: Application) -> None:
 async def error_handler_middleware(request: Request, handler: Callable) -> Response:
     try:
         return await handler(request)
-    except Exception as err:  # pylint: disable=W0703
+    except Exception:  # pylint: disable=W0703
         logging.exception('Unhandled error:')
-        return Response(status=500, text=f'Unhandled error: {str(err)}')
+        return Response(status=500, text='Unhandled error')
 
 
 def main():
@@ -63,9 +64,10 @@ def main():
     app['scheduler'] = Scheduler()
     app.add_routes(
         [
-            web.get('/', handler_example),
-            web.get('/github_auth', handle_github_redirect),
-            web.get('/vk_auth', handle_vk_redirect),
+            web.get('/vk_auth/redirect', handle_vk_redirect),
+            web.get('/github_auth/redirect', handle_github_redirect),
+            web.get('/vk_auth/{telegram_id}', auth_vk),
+            web.get('/github_auth/{telegram_id}', auth_github),
         ]
     )
     app.cleanup_ctx.append(session)

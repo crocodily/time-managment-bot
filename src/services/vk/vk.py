@@ -75,5 +75,4 @@ async def get_users_online_status(db: Engine, session: ClientSession, **_: Any) 
                 'Произошла попытка при обращении к api VK', error=await response.text()
             )
         logging.info(f'res {await response.json()}')
-    global vk_online_nodes
     # записываем для каждого пользователя новые веришны в бд

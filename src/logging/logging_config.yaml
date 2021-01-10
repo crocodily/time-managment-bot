@@ -10,7 +10,7 @@ disable_existing_loggers: false
 
 loggers:
   aiohttp:
-    level: INFO
+    level: ERROR
   aiohttp_apiset:
     level: ERROR
   asyncio:

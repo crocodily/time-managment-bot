@@ -26,6 +26,7 @@ services:
       BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       VK_CLIENT_ID: ${VK_CLIENT_ID}
       VK_CLIENT_SECRET: ${VK_CLIENT_SECRET}
+      HOST_PROTOCOL: ${HOST_PROTOCOL}
       HOST: ${HOST}
     depends_on:
       - pg

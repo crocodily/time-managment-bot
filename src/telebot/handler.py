@@ -36,7 +36,8 @@ def _register_handlers(dp: Dispatcher) -> None:
         process_initial_end_work_time, state=InitialStates.end_work_time
     )
     dp.register_message_handler(
-        process_update_start_work_time, state=UpdateWorkTimeStates.update_start_work_time
+        process_update_start_work_time,
+        state=UpdateWorkTimeStates.update_start_work_time,
     )
     dp.register_message_handler(
         process_update_end_work_time, state=UpdateWorkTimeStates.update_end_work_time
@@ -45,21 +46,21 @@ def _register_handlers(dp: Dispatcher) -> None:
 
 async def process_callback_github(callback_query: types.CallbackQuery) -> None:
     await callback_query.answer(cache_time=20)
-    inline_kb = InlineKeyboardMarkup().\
-        add(InlineKeyboardButton('Авторизоваться', url="https://www.ya.ru"))
+    inline_kb = InlineKeyboardMarkup().add(
+        InlineKeyboardButton('Авторизоваться', url='https://www.ya.ru')
+    )
     await callback_query.message.answer(
-        text=Messages.auth_github.value,
-        reply_markup=inline_kb
+        text=Messages.auth_github.value, reply_markup=inline_kb
     )
 
 
 async def process_callback_vk(callback_query: types.CallbackQuery) -> None:
     await callback_query.answer(cache_time=20)
-    inline_kb = InlineKeyboardMarkup().\
-        add(InlineKeyboardButton('Авторизоваться', url="https://www.ya.ru"))
+    inline_kb = InlineKeyboardMarkup().add(
+        InlineKeyboardButton('Авторизоваться', url='https://www.ya.ru')
+    )
     await callback_query.message.answer(
-        text=Messages.auth_vk.value,
-        reply_markup=inline_kb
+        text=Messages.auth_vk.value, reply_markup=inline_kb
     )
 
 
@@ -83,50 +84,58 @@ async def process_change_work_time(message: types.Message) -> None:
     await message.reply(Messages.start_work_time.value, reply=False)
 
 
-async def process_initial_start_work_time(message: types.Message, state: FSMContext) -> None:
+async def process_initial_start_work_time(
+    message: types.Message, state: FSMContext
+) -> None:
     async with state.proxy() as data:
         data['work_time'] = message.text
 
     # здесь сохраняем время начала рабочего дня для пользователя message.from_user.id
 
     await InitialStates.next()
-    confirm_time = f"{Messages.start_time.value} {message.text}"
+    confirm_time = f'{Messages.start_time.value} {message.text}'
     await message.reply(confirm_time, reply=False)
     await message.reply(Messages.end_work_time.value, reply=False)
 
 
-async def process_initial_end_work_time(message: types.Message, state: FSMContext) -> None:
+async def process_initial_end_work_time(
+    message: types.Message, state: FSMContext
+) -> None:
     async with state.proxy() as data:
         data['work_time'] = message.text
 
     # здесь сохраняем время конца рабочего дня для пользователя message.from_user.id
 
     await state.finish()
-    confirm_time = f"{Messages.end_time.value} {message.text}"
+    confirm_time = f'{Messages.end_time.value} {message.text}'
     await message.reply(confirm_time, reply=False)
     await process_set_accounts(message)
 
 
-async def process_update_start_work_time(message: types.Message, state: FSMContext) -> None:
+async def process_update_start_work_time(
+    message: types.Message, state: FSMContext
+) -> None:
     async with state.proxy() as data:
         data['work_time'] = message.text
 
     # здесь обновляем время начала рабочего дня для пользователя message.from_user.id
 
     await UpdateWorkTimeStates.next()
-    confirm_time = f"{Messages.start_time.value} {message.text}"
+    confirm_time = f'{Messages.start_time.value} {message.text}'
     await message.reply(confirm_time, reply=False)
     await message.reply(Messages.end_work_time.value, reply=False)
 
 
-async def process_update_end_work_time(message: types.Message, state: FSMContext) -> None:
+async def process_update_end_work_time(
+    message: types.Message, state: FSMContext
+) -> None:
     async with state.proxy() as data:
         data['work_time'] = message.text
 
     # здесь обновляем время отчета для пользователя message.from_user.id
 
     await state.finish()
-    confirm_time = f"{Messages.end_time.value} {message.text}"
+    confirm_time = f'{Messages.end_time.value} {message.text}'
     await message.reply(confirm_time, reply=False)
 
 
@@ -134,7 +143,7 @@ async def process_set_accounts(message: types.Message) -> None:
     exist = False  # получаем существуют ли настроенные аккаунты
     if exist:
         # создаем текст сообщения со списком существующих аккаунтов
-        text = f"{Messages.existing_accounts.value}\n"
+        text = f'{Messages.existing_accounts.value}\n'
         await message.reply(text, reply=False)
         # клавиатура аккаунтов без подключенных
         accounts_kb = InlineKeyboardMarkup(

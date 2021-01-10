@@ -14,7 +14,6 @@ class VkOnlineNode:
 
 @dataclass
 class CurrentOnline:
-    is_online: bool
     start: datetime
     possible_end: datetime
 
@@ -27,7 +26,6 @@ def _make_current(node: VkOnlineNode, delta: timedelta) -> Optional[CurrentOnlin
     if not node.is_online:
         return None
     return CurrentOnline(
-        is_online=True,
         start=node.created_at,
         possible_end=_get_possible_end(node, delta),
     )
@@ -44,7 +42,6 @@ def _merge(
         return None, UserActivity('VK', current.start, node.last_online)
     return (
         CurrentOnline(
-            is_online=True,
             start=current.start,
             possible_end=_get_possible_end(node, delta),
         ),
