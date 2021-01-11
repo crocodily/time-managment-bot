@@ -44,5 +44,6 @@ function convertActivityData(activityData) {
     return convertedActivityData;
 }
 
-let groupedData = groupByActivity(data)
+let activity = data.activity;
+let groupedData = groupByActivity(activity)
 let convertedToChartData = convertToChartData(groupedData)
