@@ -58,8 +58,8 @@ def main():
     try:
         loop.run_forever()
 
-    except KeyboardInterrupt:
-        logging.info('KeyboardInterrupt')
+    except BaseException:  # pylint: disable=W0703
+        logging.info('shutdown')
         loop.run_until_complete(shutdown())
         loop.stop()
 

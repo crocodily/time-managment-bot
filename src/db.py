@@ -16,8 +16,6 @@ _DATABASE = 'time_management_bot'
 
 _metadata = sa.MetaData()
 
-_tables_create_sql: List[str] = []
-
 cron_task = sa.Table(
     'cron_task',
     _metadata,
@@ -27,16 +25,43 @@ cron_task = sa.Table(
     sa.Column('time_args', sa.String(255)),
 )
 
-_tables_create_sql.append(
+# Если нужно будет написать какой-то сложный запрос и не хочется писать вручную,
+# то можно создать вот такую переменную и с помощью алхимии сконструировать запрос
+
+_tables_create_sql: List[str] = [
     """
     CREATE TABLE cron_task (
-        id serial PRIMARY KEY,
-        name varchar(50),
-        args varchar(250),
-        time_args varchar(250)
-        )
+        id serial PRIMARY KEY NOT NULL,
+        name varchar(50) NOT NULL ,
+        args varchar(250) NOT NULL,
+        time_args varchar(250) NOT NULL
+        );
+    """,
+    # последние три поля переделать в другойт ип данных, когда буду ближе работать со временем
     """
-)
+    CREATE TABLE user_account (
+        id serial PRIMARY KEY NOT NULL,
+        telegram_id varchar(100) NOT NULL UNIQUE,
+        timezone varchar(70),
+        working_day_start_at varchar(70),
+        working_day_finish_at varchar(70)
+    );
+    """,
+    """
+    CREATE TABLE vk_user_data (
+        user_id INT NOT NULL REFERENCES user_account(id) UNIQUE,
+        access_token varchar(100) NOT NULL,
+        vk_user_id varchar(50) NOT NULL
+    );
+    """,
+    """ 
+    CREATE TABLE github_user_data (
+        user_id INT NOT NULL REFERENCES user_account(id) UNIQUE,
+        access_token varchar(100) NOT NULL,
+        user_name varchar(50) NOT NULL
+    );
+    """,
+]
 
 
 async def _create_tables(tables_create_sql: List[str], engine: Engine) -> None:

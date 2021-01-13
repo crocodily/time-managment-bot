@@ -9,5 +9,6 @@ ignore =
     W504 ; Line break occurred after a binary operator
     N802 ; function name CONFIG should be lowercase
     N803 ; argument name CONFIG should be lowercase
+    W291 ; trailing whitespace
 max-complexity = 15
 show-source = true
