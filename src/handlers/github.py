@@ -10,19 +10,18 @@ from aiohttp.web_response import Response
 
 from src.handlers.common import URI, _auth_service, user_authorization_identifier
 from src.services.error import ApiError
+from src.singletones import client_session
 
 _GITHUB_REDIRECT_URI = f'{URI}/github_auth/redirect'
 
 
 async def handle_github_redirect(request: Request) -> Response:
-    session: ClientSession = request.app['session']
     query = {
         'code': request.url.query['code'],
         'client_id': os.environ['GITHUB_CLIENT_ID'],
         'client_secret': os.environ['GITHUB_CLIENT_SECRET'],
     }
-
-    logging.debug(await _get_github_token(query, session))
+    logging.debug(await _get_github_token(query, client_session))
     logging.debug(
         f'Был получен github access_token для пользователя'
         f' {user_authorization_identifier[request.cookies["github_auth"]]}'

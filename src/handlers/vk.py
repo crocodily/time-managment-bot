@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from src.handlers.common import URI, _auth_service, user_authorization_identifier
 from src.services.error import ApiError
+from src.singletones import client_session
 
 _VK_REDIRECT_URI = f'{URI}/vk_auth/redirect'
 
@@ -22,7 +23,7 @@ async def handle_vk_redirect(request: Request) -> Response:
         'redirect_uri': _VK_REDIRECT_URI,
         'code': request.query['code'],
     }
-    session: ClientSession = request.app['session']
+    session: ClientSession = client_session
     await _get_user_data(query_params, session)
     vk_auth_uuid = request.cookies['vk_auth']
     user_id = user_authorization_identifier[vk_auth_uuid]
