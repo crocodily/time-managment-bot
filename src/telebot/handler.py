@@ -2,6 +2,13 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
 
+from src.services.common import (
+    create_user_if_not_exists,
+    save_user_day_end_time,
+    save_user_day_start_time,
+)
+from src.services.github.github import generate_github_auth_link
+from src.singletones import engine
 from src.telebot.messages import Messages
 from src.telebot.states import InitialStates, UpdateWorkTimeStates
 
@@ -71,6 +78,8 @@ async def process_callback_done(callback_query: types.CallbackQuery) -> None:
 
 
 async def process_start_command(message: types.Message) -> None:
+    async with engine.acquire() as conn:
+        await create_user_if_not_exists(message.from_user.id, conn)
     await InitialStates.start_work_time.set()
     await message.reply(Messages.start_work_time.value, reply=False)
 
@@ -87,8 +96,8 @@ async def process_change_work_time(message: types.Message) -> None:
 async def process_initial_start_work_time(
     message: types.Message, state: FSMContext
 ) -> None:
-    async with state.proxy() as data:
-        data['work_time'] = message.text
+    async with engine.acquire() as conn:
+        await save_user_day_start_time(message.from_user.id, message.text, conn)
 
     # здесь сохраняем время начала рабочего дня для пользователя message.from_user.id
 
@@ -101,8 +110,8 @@ async def process_initial_start_work_time(
 async def process_initial_end_work_time(
     message: types.Message, state: FSMContext
 ) -> None:
-    async with state.proxy() as data:
-        data['work_time'] = message.text
+    async with engine.acquire() as conn:
+        await save_user_day_end_time(message.from_user.id, message.text, conn)
 
     # здесь сохраняем время конца рабочего дня для пользователя message.from_user.id
 
@@ -115,8 +124,8 @@ async def process_initial_end_work_time(
 async def process_update_start_work_time(
     message: types.Message, state: FSMContext
 ) -> None:
-    async with state.proxy() as data:
-        data['work_time'] = message.text
+    async with engine.acquire() as conn:
+        await save_user_day_start_time(message.from_user.id, message.text, conn)
 
     # здесь обновляем время начала рабочего дня для пользователя message.from_user.id
 
@@ -129,8 +138,8 @@ async def process_update_start_work_time(
 async def process_update_end_work_time(
     message: types.Message, state: FSMContext
 ) -> None:
-    async with state.proxy() as data:
-        data['work_time'] = message.text
+    async with engine.acquire() as conn:
+        await save_user_day_end_time(message.from_user.id, message.text, conn)
 
     # здесь обновляем время отчета для пользователя message.from_user.id
 
@@ -140,6 +149,8 @@ async def process_update_end_work_time(
 
 
 async def process_set_accounts(message: types.Message) -> None:
+    user_telegram_id = message.from_user.id
+    github_auth_link = generate_github_auth_link(user_telegram_id)
     exist = False  # получаем существуют ли настроенные аккаунты
     if exist:
         # создаем текст сообщения со списком существующих аккаунтов
@@ -163,7 +174,9 @@ async def process_set_accounts(message: types.Message) -> None:
         accounts_kb = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton('GitHub', callback_data='github'),
+                    InlineKeyboardButton(
+                        'GitHub', callback_data='github', url=github_auth_link
+                    ),
                     InlineKeyboardButton('VK', callback_data='vk'),
                 ],
                 [InlineKeyboardButton('Готово', callback_data='done')],

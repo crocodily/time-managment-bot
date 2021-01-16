@@ -29,7 +29,7 @@ def _start_task(
     function: Callable,
     args: Dict,
     time_args: str,
-    session: Optional[ClientSession],
+    session: ClientSession,
 ) -> None:
     job = CronJob(function.__name__)  # type: ignore
     # добавляем аргументы из библиотеки CronJob
@@ -45,7 +45,7 @@ async def create_task(  # pylint: disable=R0913
     function: Callable,
     args: Dict,
     time_args: str,
-    session: Optional[ClientSession] = None,
+    session: Optional[ClientSession],
 ) -> None:
     await _insert_task_to_db(db, function.__name__, args, time_args)
     _start_task(scheduler, function, args, time_args, session)

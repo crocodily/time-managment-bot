@@ -8,7 +8,8 @@ from aiohttp.abc import Request
 from aiohttp.web_response import Response
 from pydantic import BaseModel
 
-from src.handlers.common import URI, _auth_service, user_authorization_identifier
+from src import URI
+from src.handlers.common import _auth_service, user_authorization_identifier
 from src.services.error import ApiError
 from src.singletones import client_session
 

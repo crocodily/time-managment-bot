@@ -25,6 +25,16 @@ cron_task = sa.Table(
     sa.Column('time_args', sa.String(255)),
 )
 
+user_account = sa.Table(
+    'user_account',
+    _metadata,
+    sa.Column('id', sa.Integer, primary_key=True),
+    sa.Column('telegram_id', sa.Integer()),
+    sa.Column('timezone', sa.String(70)),
+    sa.Column('working_day_start_at', sa.String(70)),
+    sa.Column('working_day_finish_at', sa.String(70)),
+)
+
 # Если нужно будет написать какой-то сложный запрос и не хочется писать вручную,
 # то можно создать вот такую переменную и с помощью алхимии сконструировать запрос
 
@@ -41,7 +51,7 @@ _tables_create_sql: List[str] = [
     """
     CREATE TABLE user_account (
         id serial PRIMARY KEY NOT NULL,
-        telegram_id varchar(100) NOT NULL UNIQUE,
+        telegram_id INT NOT NULL UNIQUE,
         timezone varchar(70),
         working_day_start_at varchar(70),
         working_day_finish_at varchar(70)
@@ -58,7 +68,7 @@ _tables_create_sql: List[str] = [
     CREATE TABLE github_user_data (
         user_id INT NOT NULL REFERENCES user_account(id) UNIQUE,
         access_token varchar(100) NOT NULL,
-        user_name varchar(50) NOT NULL
+        user_name varchar(50)
     );
     """,
 ]

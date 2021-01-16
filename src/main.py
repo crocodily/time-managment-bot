@@ -2,11 +2,14 @@ import asyncio
 import logging
 from typing import Callable
 
+import aiohttp_jinja2
+import jinja2
 from aiohttp import web
 from aiohttp.abc import Application, Request
 from aiohttp.web_middlewares import middleware
 from aiohttp.web_response import Response
 
+from src.handlers.front_api import get_report_page, get_user_activity
 from src.handlers.github import auth_github, handle_github_redirect
 from src.handlers.vk import auth_vk, handle_vk_redirect
 from src.singletones import bot, client_session, dp, engine, scheduler
@@ -41,12 +44,18 @@ def main():
     logging.info('App startup')
     loop = asyncio.get_event_loop()
     app = web.Application()
+    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('/src/front/html'))
+    app['static_root_url'] = '/src/front/static'
+    app.router.add_static('/src/front/static/', path='/src/front/static', name='static')
+
     app.add_routes(
         [
             web.get('/vk_auth/redirect', handle_vk_redirect),
             web.get('/github_auth/redirect', handle_github_redirect),
             web.get('/vk_auth/{telegram_id}', auth_vk),
             web.get('/github_auth/{telegram_id}', auth_github),
+            web.get('/report/{user_id}', get_user_activity),
+            web.get('/report_page/{user_id}', get_report_page),
         ]
     )
     loop.run_until_complete(start_api(app))

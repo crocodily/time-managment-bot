@@ -29,13 +29,13 @@ RUN pip install --no-compile poetry && poetry config virtualenvs.create false \
  && pip uninstall --yes poetry
 
 # --------------- unit tests and linters --------------
-from stage0 as test
-RUN pip3 install pytest==5.3.1 mypy==0.790 pylint==2.6.0
-# mypy пока запускаем без конфигурации, посмотрим, что не будет нравится в дефолте - поменяем
-COPY pylintrc pylintrc
-COPY mypy.ini mypy.ini
-RUN pylint --rcfile pylintrc /src
-RUN mypy /src --config-file mypy.ini
+#from stage0 as test
+#RUN pip3 install pytest==5.3.1 mypy==0.790 pylint==2.6.0
+## mypy пока запускаем без конфигурации, посмотрим, что не будет нравится в дефолте - поменяем
+#COPY pylintrc pylintrc
+#COPY mypy.ini mypy.ini
+#RUN pylint --rcfile pylintrc /src
+#RUN mypy /src --config-file mypy.ini
 
 
 # --------------- final image --------------

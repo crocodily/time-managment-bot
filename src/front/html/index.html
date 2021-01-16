@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <title>Отчёт</title>
-    <link rel="stylesheet" href="../css/chart.css" />
+    <link rel="stylesheet" href="{{ static('css/chart.css') }}"/>
 
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script src="../js/data.js"></script>
-    <script src="../js/activityHandler.js"></script>
+    <script src="{{ static('js/data.js') }}"></script>
+    <script src="{{ static('js/activityHandler.js') }}"></script>
 </head>
 <body>
     <div class="container">
@@ -18,8 +19,8 @@
         </section>
     </div>
 
-    <script src="../js/dateHandler.js"></script>
-    <script src="../js/chartSettings.js"></script>
-    <script src="../js/chartRender.js"></script>
+    <script src="{{ static('js/dateHandler.js') }}"></script>
+    <script src="{{ static('js/chartSettings.js') }}"></script>
+    <script src="{{ static('js/chartRender.js') }}"></script>
 </body>
 </html>
