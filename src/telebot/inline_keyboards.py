@@ -2,11 +2,11 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeybo
 from aiogram.utils.callback_data import CallbackData
 
 
-time_callback = CallbackData("counter", "state", "time")
-done_callback = CallbackData("done", "state", "time")
+time_callback = CallbackData("counter", "state", "time", 'user_id')
+done_callback = CallbackData("done", "state", "time", 'user_id')
 
 
-def get_time_keyboard(hours: int, minutes: int, state: str):
+def get_time_keyboard(hours: int, minutes: int, state: str, user_id: str):
 
     hours_down = hours - 1
     hours_up = hours + 1
@@ -22,11 +22,11 @@ def get_time_keyboard(hours: int, minutes: int, state: str):
     if minutes_up > 45:
         minutes_up = 0
 
-    hours_down_text = f"counter:{state}:{hours_down}.{minutes}"
-    hours_up_text = f"counter:{state}:{hours_up}.{minutes}"
-    minutes_down_text = f"counter:{state}:{hours}.{minutes_down}"
-    minutes_up_text = f"counter:{state}:{hours}.{minutes_up}"
-    done_text = f"done:{state}:{hours}.{minutes}"
+    hours_down_text = f"counter:{state}:{hours_down}.{minutes}:{user_id}"
+    hours_up_text = f"counter:{state}:{hours_up}.{minutes}:{user_id}"
+    minutes_down_text = f"counter:{state}:{hours}.{minutes_down}:{user_id}"
+    minutes_up_text = f"counter:{state}:{hours}.{minutes_up}:{user_id}"
+    done_text = f"done:{state}:{hours}.{minutes}:{user_id}"
 
     time_keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
