@@ -11,9 +11,10 @@ class UserActivity:
     to_time: datetime
 
     def to_dict(self) -> Dict[str, Any]:
+        format = '%Y-%m-%dT%H:%MZ'
         return {
             'serviceName': self.service_name,
             'activityName': self.description,
-            'fromTime': str(self.from_time),
-            'toTime': str(self.to_time),
+            'fromTime': self.from_time.strftime(format),
+            'toTime': self.to_time.strftime(format),
         }
