@@ -7,6 +7,7 @@ from typing import Any, Dict, List
 from aiohttp import ClientSession
 from aiopg.sa import Engine
 
+from src import URI
 from src.services.error import ApiError
 from src.services.user_activity import UserActivity
 
@@ -16,6 +17,10 @@ class VKUser:
     id: str
     vk_id: str
     access_token: str
+
+
+def generate_vk_auth_link(user_telegram_id: int) -> str:
+    return f'{URI}/vk_auth/{user_telegram_id}'
 
 
 def _construct_query(vk_users: List[VKUser]) -> Dict:
@@ -68,7 +73,7 @@ async def get_users_online_status(db: Engine, session: ClientSession, **_: Any) 
     # FIXME: кол-во пользователей в query - не больше 1000, сейчас не критично, потом править
     query = _construct_query(await _get_users(db))
     async with session.get(
-        'https://api.vk.com/method/users.get', params=query
+            'https://api.vk.com/method/users.get', params=query
     ) as response:
         if response.status != HTTPStatus.OK:
             raise ApiError(
