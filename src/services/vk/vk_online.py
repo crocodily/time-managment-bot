@@ -39,7 +39,7 @@ def _merge(
     current: CurrentOnline, node: VkOnlineNode, delta: timedelta
 ) -> Tuple[Optional[CurrentOnline], Optional[UserActivity]]:
     if not node.is_online:
-        return None, UserActivity('VK', current.start, node.last_online)
+        return None, UserActivity('VK', 'online',current.start, node.last_online)
     return (
         CurrentOnline(
             start=current.start,
@@ -57,7 +57,7 @@ def get_single_node_activity(
     half_delta = delta / 2
     created_at = node.created_at
     return UserActivity(
-        'VK', from_time=created_at - half_delta, to_time=created_at + half_delta
+        'VK', description='online',from_time=created_at - half_delta, to_time=created_at + half_delta
     )
 
 
@@ -83,6 +83,6 @@ def get_vk_online(
             user_activities.append(user_activity)
     if current:
         user_activities.append(
-            UserActivity('VK', from_time=current.start, to_time=current.possible_end)
+            UserActivity('VK', 'online', from_time=current.start, to_time=current.possible_end)
         )
     return user_activities

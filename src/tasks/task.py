@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Any
 
 from aiohttp import ClientSession
 from aiopg.sa import Engine
@@ -12,43 +12,44 @@ from src.tasks.handlers import handlers
 
 
 async def _insert_task_to_db(
-    db: Engine, function_name: str, args: Dict, time_args: str
+        conn: Any, function_name: str, args: Dict, time_args: str
 ) -> None:
-    async with db.acquire() as conn:
-        args_in_json = json.dumps(args)
-        await conn.execute(
-            cron_task.insert().values(  # pylint: disable=E1120
-                name=function_name, args=args_in_json, time_args=time_args
-            )
+    args_in_json = json.dumps(args)
+    await conn.execute(
+        cron_task.insert().values(  # pylint: disable=E1120
+            name=function_name, args=args_in_json, time_args=time_args
         )
-        logging.debug(f'Задача {function_name} записана в БД')
+    )
+    logging.debug(f'Задача {function_name} записана в БД')
 
 
 def _start_task(
-    scheduler: Scheduler,
-    function: Callable,
-    args: Dict,
-    time_args: str,
-    session: ClientSession,
+        scheduler: Scheduler,
+        function: Callable,
+        args: Dict,
+        time_args: str,
+        session: ClientSession,
+        db: Engine
 ) -> None:
     job = CronJob(function.__name__)  # type: ignore
     # добавляем аргументы из библиотеки CronJob
     job = eval(f'job.{time_args}')  # pylint: disable=W0123
-    job.go(function, session=session, **args)
+    job.go(function, session=session,db=db, **args)
     scheduler.add_job(job)
     logging.debug(f'Задача {function.__name__} добавлена в scheduler async_cron')
 
 
 async def create_task(  # pylint: disable=R0913
-    db: Engine,
-    scheduler: Scheduler,
-    function: Callable,
-    args: Dict,
-    time_args: str,
-    session: Optional[ClientSession],
+        conn: Any,
+        scheduler: Scheduler,
+        function: Callable,
+        args: Dict,
+        time_args: str,
+        session: ClientSession,
+        db: Engine,
 ) -> None:
-    await _insert_task_to_db(db, function.__name__, args, time_args)
-    _start_task(scheduler, function, args, time_args, session)
+    await _insert_task_to_db(conn, function.__name__, args, time_args)
+    _start_task(scheduler, function, args, time_args, session, db)
     logging.info(f'Создана задача {function.__name__}')
 
 
@@ -72,7 +73,7 @@ def _restart_task(task: Dict, scheduler: Scheduler, session: ClientSession) -> N
 
 
 async def recreate_tasks(
-    db: Engine, scheduler: Scheduler, session: ClientSession
+        db: Engine, scheduler: Scheduler, session: ClientSession
 ) -> None:
     tasks = await _get_tasks(db)
     if not tasks:

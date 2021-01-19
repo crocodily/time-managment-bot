@@ -35,6 +35,18 @@ user_account = sa.Table(
     sa.Column('working_day_finish_at', sa.String(70)),
 )
 
+user_activity = sa.Table(
+    'user_activity',
+    _metadata,
+    sa.Column('id', sa.Integer, primary_key=True),
+    sa.Column('user_id', sa.Integer),
+    sa.Column('service_name', sa.String(20)),
+    sa.Column('description', sa.String(20)),
+    sa.Column('from_time', sa.String(70)),
+    sa.Column('to_time', sa.String(70)),
+)
+
+
 # Если нужно будет написать какой-то сложный запрос и не хочется писать вручную,
 # то можно создать вот такую переменную и с помощью алхимии сконструировать запрос
 
@@ -71,6 +83,16 @@ _tables_create_sql: List[str] = [
         user_name varchar(50)
     );
     """,
+    """
+    CREATE TABLE user_activity (
+        id serial PRIMARY KEY NOT NULL,
+        user_id INT NOT NULL REFERENCES user_account(id),
+        service_name varchar(20),
+        description varchar (40),
+        from_time varchar(70),
+        to_time varchar(70)
+    )
+    """
 ]
 
 

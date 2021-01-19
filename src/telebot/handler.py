@@ -7,11 +7,12 @@ from aiogram.types import BotCommand, CallbackQuery, InlineKeyboardButton, Inlin
 from src.services.common import (
     create_user_if_not_exists,
     save_user_day_end_time,
-    save_user_day_start_time,
+    save_user_day_start_time, on_workday_ends,
 )
 from src.services.github.github import generate_github_auth_link
 from src.services.vk.vk import generate_vk_auth_link
-from src.singletones import engine
+from src.singletones import engine, scheduler, client_session
+from src.tasks.task import create_task
 from src.telebot.inline_keyboards import get_inline_keyboard_with_link, get_time_keyboard, \
     time_callback, done_callback, get_accounts_keyboard, get_time_dict_from_str
 from src.telebot.enums import Messages, get_all_accounts
@@ -125,7 +126,8 @@ async def process_callback_done_update_start(callback_query: CallbackQuery, call
     confirm_time = f"{Messages.start_time.value} {time['hours']}:{time['minutes']}"
     await callback_query.message.answer(text=confirm_time)
     await callback_query.message.answer(Messages.end_work_time.value,
-                                        reply_markup=get_time_keyboard(18, 0, "update_finish", callback_data['user_id']),
+                                        reply_markup=get_time_keyboard(18, 0, "update_finish",
+                                                                       callback_data['user_id']),
                                         reply=False)
 
 
@@ -135,6 +137,9 @@ async def process_callback_done_finish(callback_query: CallbackQuery, callback_d
 
     async with engine.acquire() as conn:
         await save_user_day_end_time(callback_data['user_id'], f"{time['hours']}:{time['minutes']}", conn)
+    await create_task(conn, scheduler, on_workday_ends, {"telegram_id": callback_data['user_id']},
+                          time_args=f'every(1).weekday().at("{5}:{21}")', session=client_session, db=engine)
+                          # time_args=f'every(1).weekday().at("{time["hours"]}:{time["minutes"]}")', session=client_session)
 
     await callback_query.message.edit_reply_markup()
     confirm_time = f"{Messages.end_time.value} {time['hours']}:{time['minutes']}"
@@ -173,7 +178,6 @@ async def process_change_work_time(message: types.Message) -> None:
 async def process_initial_start_work_time(
     message: types.Message, state: FSMContext
 ) -> None:
-
     await InitialStates.next()
     confirm_time = f'{Messages.start_time.value} {message.text}'
     await message.reply(confirm_time, reply=False)
@@ -181,9 +185,8 @@ async def process_initial_start_work_time(
 
 
 async def process_initial_end_work_time(
-    message: types.Message, state: FSMContext
+        message: types.Message, state: FSMContext
 ) -> None:
-
     # здесь сохраняем время конца рабочего дня для пользователя message.from_user.id
 
     await state.finish()
@@ -193,7 +196,7 @@ async def process_initial_end_work_time(
 
 
 async def process_update_start_work_time(
-    message: types.Message, state: FSMContext
+        message: types.Message, state: FSMContext
 ) -> None:
     async with engine.acquire() as conn:
         await save_user_day_start_time(message.from_user.id, message.text, conn)
@@ -207,7 +210,7 @@ async def process_update_start_work_time(
 
 
 async def process_update_end_work_time(
-    message: types.Message, state: FSMContext
+        message: types.Message, state: FSMContext
 ) -> None:
     async with engine.acquire() as conn:
         await save_user_day_end_time(message.from_user.id, message.text, conn)

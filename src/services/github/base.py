@@ -36,8 +36,9 @@ class GithubEvent(BaseModel):
 
 
 class GithubEventParser(ABC):
-    def __init__(self, event: GithubEvent):
+    def __init__(self, event: GithubEvent, from_time_utc: datetime):
         self._event = event
+        self._from_time_utc = from_time_utc
 
     @abstractmethod
     async def parse(self) -> List[UserActivity]:
