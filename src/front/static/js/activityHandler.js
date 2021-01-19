@@ -34,8 +34,8 @@ function convertActivityData(activityData) {
         let activityDataElem = {
             x: activityData[data].serviceName,
             y: [
-                activityData[data].fromTime.getTime(),
-                activityData[data].toTime.getTime()
+                new Date(activityData[data].fromTime).getTime(),
+                new Date(activityData[data].toTime).getTime()
             ]
         };
         convertedActivityData.push(activityDataElem);
@@ -43,7 +43,3 @@ function convertActivityData(activityData) {
 
     return convertedActivityData;
 }
-
-let activity = data.activity;
-let groupedData = groupByActivity(activity)
-let convertedToChartData = convertToChartData(groupedData)

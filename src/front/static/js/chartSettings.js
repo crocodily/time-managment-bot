@@ -11,7 +11,7 @@ let plotOptionsSettings = {
     }
 };
 
-let colorsSettings = ["#00E396", "#775DD0", "#FEB019", "#FF4560", "#008FFB"];
+let colorsSettings = ["#00E396", "#775DD0", "#008FFB", "#FF4560", "#008FFB"];
 
 let strokeSettings = {
     width: 2

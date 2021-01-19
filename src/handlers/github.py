@@ -33,7 +33,7 @@ async def handle_github_redirect(request: Request) -> Response:
     await _save_github_data(telegram_id, access_token, user_name, conn)
     user = cast(User, await get_user_by_telegram_id(telegram_id, conn))
     logging.debug(f'Был получен github access_token для пользователя' f' {telegram_id}')
-    return Response(status=HTTPStatus.OK, text='Успех')
+    return Response(status=HTTPStatus.OK, text='Авторизация успешно выполнена, можете вернуться обратно в telegram')
 
 
 class GithubUser(BaseModel):

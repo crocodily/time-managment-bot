@@ -10,6 +10,7 @@ from src.services.common import (
     save_user_day_start_time,
 )
 from src.services.github.github import generate_github_auth_link
+from src.services.vk.vk import generate_vk_auth_link
 from src.singletones import engine
 from src.telebot.inline_keyboards import get_inline_keyboard_with_link, get_time_keyboard, \
     time_callback, done_callback, get_accounts_keyboard, get_time_dict_from_str
@@ -220,6 +221,7 @@ async def process_update_end_work_time(
 
 async def process_set_accounts(message: types.Message, user_id: str) -> None:
     github_auth_link = generate_github_auth_link(int(user_id))
+    vk_auth_link = generate_vk_auth_link(int(user_id))
     exist = False  # получаем существуют ли настроенные аккаунты
 
     if exist:
@@ -247,7 +249,7 @@ async def process_set_accounts(message: types.Message, user_id: str) -> None:
                     InlineKeyboardButton(
                         'GitHub', callback_data='github', url=github_auth_link
                     ),
-                    InlineKeyboardButton('VK', callback_data='vk'),
+                    InlineKeyboardButton('VK', callback_data='vk', url=vk_auth_link),
                 ],
                 [InlineKeyboardButton('Готово', callback_data='done')],
             ]
