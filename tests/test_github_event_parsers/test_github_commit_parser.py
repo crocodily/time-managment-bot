@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 from aiohttp import ClientSession
@@ -30,5 +30,16 @@ async def test_commit_time_shapes_correctly(push_event, mocker):
     )
     created_at = datetime(1999, 12, 24, 12, 0)
     patched_get_commit_func.return_value = created_at
-    res = await CommitParser(push_event, ClientSession(), '').parse()
-    assert [UserActivity(f'{USER_ACTIVITY} CommitEvent', created_at, created_at)] == res
+    res = await CommitParser(push_event, created_at - timedelta(minutes=5), ClientSession(), '').parse()
+    assert [UserActivity(USER_ACTIVITY, 'commit', created_at, created_at)] == res
+
+
+@pytest.mark.asyncio
+async def test_commit_time_with_outrange_time(push_event, mocker):
+    patched_get_commit_func = mocker.patch(
+        'src.services.github.commit_parser._get_github_commit_time'
+    )
+    created_at = datetime(1999, 12, 24, 12, 0)
+    patched_get_commit_func.return_value = created_at
+    res = await CommitParser(push_event, datetime.utcnow(), ClientSession(), '').parse()
+    assert [] == res

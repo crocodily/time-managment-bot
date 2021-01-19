@@ -14,7 +14,7 @@ class UserActivity:
         format = '%Y-%m-%dT%H:%MZ'
         return {
             'serviceName': self.service_name,
-            'activityName': self.description,
+            'description': self.description,
             'fromTime': self.from_time.strftime(format),
             'toTime': self.to_time.strftime(format),
         }

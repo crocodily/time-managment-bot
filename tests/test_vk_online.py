@@ -17,7 +17,7 @@ def test_one_active_node_online(datetime_, delta):
     half_delta = delta / 2
     expected = [
         UserActivity(
-            name='VK', from_time=datetime_ - half_delta, to_time=datetime_ + half_delta
+            service_name='VK', description='online', from_time=datetime_ - half_delta, to_time=datetime_ + half_delta
         )
     ]
     assert actual == expected
@@ -45,7 +45,7 @@ def test_active_and_then_no_active_node(datetime_, delta):
     ]
     actual = get_vk_online(online_nodes=nodes, nodes_time_delta=delta)
     expected = [
-        UserActivity(name='VK', from_time=datetime_ - delta, to_time=last_online)
+        UserActivity(service_name='VK', description='online', from_time=datetime_ - delta, to_time=last_online)
     ]
     assert actual == expected
 
@@ -60,7 +60,7 @@ def test_two_close_active_nodes(datetime_, delta):
     actual = get_vk_online(online_nodes=nodes, nodes_time_delta=delta)
     expected = [
         UserActivity(
-            name='VK', from_time=datetime_ - delta, to_time=datetime_ + 0.5 * delta
+            service_name='VK', description='online', from_time=datetime_ - delta, to_time=datetime_ + 0.5 * delta
         )
     ]
     assert actual == expected
@@ -89,7 +89,7 @@ def test_offline_and_then_online_node(datetime_, delta):
     ]
     actual = get_vk_online(online_nodes=nodes, nodes_time_delta=delta)
     expected = [
-        UserActivity(name='VK', from_time=datetime_, to_time=datetime_ + 0.5 * delta)
+        UserActivity(service_name='VK', description='online', from_time=datetime_, to_time=datetime_ + 0.5 * delta)
     ]
     assert actual == expected
 
@@ -109,8 +109,8 @@ def test_online_offline_online_nodes(datetime_, delta):
     ]
     actual = get_vk_online(online_nodes=nodes, nodes_time_delta=delta)
     expected = [
-        UserActivity(name='VK', from_time=datetime_ - 2 * delta, to_time=last_online),
-        UserActivity(name='VK', from_time=datetime_, to_time=datetime_ + 0.5 * delta),
+        UserActivity(service_name='VK', description='online', from_time=datetime_ - 2 * delta, to_time=last_online),
+        UserActivity(service_name='VK', description='online', from_time=datetime_, to_time=datetime_ + 0.5 * delta),
     ]
     assert actual == expected
 
@@ -130,6 +130,6 @@ def test_offline_online_offline_nodes(datetime_, delta):
     ]
     actual = get_vk_online(online_nodes=nodes, nodes_time_delta=delta)
     expected = [
-        UserActivity(name='VK', from_time=datetime_ - delta, to_time=last_online),
+        UserActivity(service_name='VK', description='online', from_time=datetime_ - delta, to_time=last_online),
     ]
     assert actual == expected

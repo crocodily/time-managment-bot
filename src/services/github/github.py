@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, List
 
 from aiohttp import ClientSession
@@ -30,7 +31,7 @@ async def _get_github_events(
 
 
 def _get_event_parsers(
-    events: List[GithubEvent], session: ClientSession, access_token: str
+    events: List[GithubEvent], session: ClientSession, access_token: str, from_time_utc: datetime
 ) -> List[GithubEventParser]:
     event_parsers: List[GithubEventParser] = []
     for event in events:
@@ -42,15 +43,15 @@ def _get_event_parsers(
             GithubEventType.Issue,
         ]:
             continue
-        event_parsers.append(get_event_parser(event, session, access_token))
+        event_parsers.append(get_event_parser(event, session, access_token, from_time_utc))
     return event_parsers
 
 
 async def get_github_activity(
-    user_name: str, access_token: str, session: ClientSession
+    user_name: str, access_token: str, session: ClientSession, from_time_utc: datetime
 ) -> List[UserActivity]:
     github_events = await _get_github_events(user_name, session, access_token)
-    event_parsers = _get_event_parsers(github_events, session, access_token)
+    event_parsers = _get_event_parsers(github_events, session, access_token, from_time_utc)
     result = []
     for event_parser in event_parsers:
         result += await event_parser.parse()
@@ -72,7 +73,6 @@ async def _get_github_user(user_id: int, conn: Any) -> GithubUser:
 async def _save_github_user(
     user_id: int, access_token: str, github_user_name: str, conn: Any
 ) -> None:
-    logging.debug(f'user_id: {user_id}')
     try:
         await conn.execute(
             'INSERT INTO github_user_data (user_id, access_token, user_name) VALUES(%s, %s, %s)',

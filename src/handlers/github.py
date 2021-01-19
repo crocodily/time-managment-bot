@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from src import URI
 from src.handlers.common import _auth_service, user_authorization_identifier
-from src.services.common import User, create_user_if_not_exists, get_user_by_telegram_id
+from src.services.common import User, create_user_if_not_exists, get_user
 from src.services.error import ApiError
 from src.services.github.github import _save_github_user
 from src.singletones import client_session, engine
@@ -31,7 +31,7 @@ async def handle_github_redirect(request: Request) -> Response:
         telegram_id = int(user_authorization_identifier[request.cookies['github_auth']])
     user_name = await _get_github_user_name(access_token, session)
     await _save_github_data(telegram_id, access_token, user_name, conn)
-    user = cast(User, await get_user_by_telegram_id(telegram_id, conn))
+    user = cast(User, await get_user(telegram_id=telegram_id, conn=conn))
     logging.debug(f'Был получен github access_token для пользователя' f' {telegram_id}')
     return Response(status=HTTPStatus.OK, text='Авторизация успешно выполнена, можете вернуться обратно в telegram')
 

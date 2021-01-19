@@ -8,6 +8,7 @@ from aiohttp import ClientSession
 from pydantic import BaseModel
 
 from src.services.github.base import USER_ACTIVITY, GithubEvent, GithubEventParser
+from src.services.time import matches_the_time
 from src.services.user_activity import UserActivity
 
 
@@ -35,7 +36,7 @@ async def _get_github_commit_time(
     commit_link: str, session: ClientSession, access_token: str
 ) -> datetime:
     async with session.get(
-        commit_link, headers={'Authorization': f'token {access_token}'}
+            commit_link, headers={'Authorization': f'token {access_token}'}
     ) as resp:
         if resp.status != HTTPStatus.OK:
             raise RuntimeError(f'Не найден коммит по ссылке {commit_link}')
@@ -44,8 +45,8 @@ async def _get_github_commit_time(
 
 
 class CommitParser(GithubEventParser):
-    def __init__(self, event: GithubEvent, session: ClientSession, access_token: str):
-        super().__init__(event)
+    def __init__(self, event: GithubEvent, from_time_utc: datetime, session: ClientSession, access_token: str):
+        super().__init__(event, from_time_utc)
         self._client_session = session
         self._access_token = access_token
 
@@ -61,10 +62,13 @@ class CommitParser(GithubEventParser):
             ],
             return_exceptions=True,
         )
+        logging.debug(f'times: {dates}')
         res = []
-        for date in dates:
-            if isinstance(date, BaseException):
-                logging.error(date)
+        for commit_time in dates:
+            if isinstance(commit_time, BaseException):
+                logging.error(commit_time)
                 continue
-            res.append(UserActivity(f'{USER_ACTIVITY} CommitEvent', date, date))
+            if not matches_the_time(self._from_time_utc, commit_time):
+                continue
+            res.append(UserActivity(USER_ACTIVITY, 'commit', commit_time, commit_time))
         return res
