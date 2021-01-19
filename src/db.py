@@ -41,9 +41,10 @@ user_activity = sa.Table(
     sa.Column('id', sa.Integer, primary_key=True),
     sa.Column('user_id', sa.Integer),
     sa.Column('service_name', sa.String(20)),
-    sa.Column('description', sa.String(20)),
-    sa.Column('from_time', sa.String(70)),
-    sa.Column('to_time', sa.String(70)),
+    sa.Column('description', sa.String(40)),
+    sa.Column('activity_date', sa.Date()),
+    sa.Column('from_time', sa.Time()),
+    sa.Column('to_time', sa.Time()),
 )
 
 
@@ -65,8 +66,8 @@ _tables_create_sql: List[str] = [
         id serial PRIMARY KEY NOT NULL,
         telegram_id INT NOT NULL UNIQUE,
         timezone varchar(70),
-        working_day_start_at varchar(70),
-        working_day_finish_at varchar(70)
+        working_day_start_at time without time zone,
+        working_day_finish_at time without time zone
     );
     """,
     """
@@ -89,9 +90,10 @@ _tables_create_sql: List[str] = [
         user_id INT NOT NULL REFERENCES user_account(id),
         service_name varchar(20),
         description varchar (40),
-        from_time varchar(70),
-        to_time varchar(70)
-    )
+        activity_date date,
+        from_time time without time zone,
+        to_time time without time zone
+    );
     """
 ]
 

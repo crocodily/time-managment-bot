@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import Any, Optional, cast, List
 
 from aiopg.sa import Engine
@@ -29,13 +29,13 @@ async def _create_user(telegram_id: int, conn: Any) -> None:
 
 
 async def save_user_activities(user_id: int, conn: Any) -> None:
-    activities = await _get_user_activities(user_id, conn)
+    activities = await _get_user_activities_from_services(user_id, conn)
     # aiopg не умеет bulk_insert https://github.com/aio-libs/aiopg/issues/112
     for activity in activities:
         await conn.execute(user_activity.insert().values(
             user_id=user_id, service_name=activity.service_name,
             description=activity.description, from_time=activity.from_time,
-            to_time=activity.to_time
+            to_time=activity.to_time, activity_date=activity.from_time
         ))
 
 
@@ -129,11 +129,40 @@ async def _get_user_services(user_id: int, conn: Any) -> UserServices:
     )
 
 
-async def _get_user_activities(user_id: int, conn: Any) -> List[UserActivity]:
+async def get_user_activities_by_date(user_id: int, conn: Any, activity_date: date) -> List[UserActivity]:
+    query = """
+    SELECT * 
+    FROM user_activity activity
+    JOIN user_account account
+    ON activity.user_id = account.id
+    WHERE 
+        activity.user_id = %s
+        AND
+        activity_date = %s
+        AND
+        (account.working_day_start_at, account.working_day_finish_at)
+        OVERLAPS
+        (activity.from_time, activity.to_time);
+    """
+    day = activity_date.strftime('%Y-%m-%d')
+    raw_result = await conn.execute(query, user_id, day)
+    activities: List[UserActivity] = []
+    async for activity in raw_result:
+        format = '%Y-%m-%d %H:%M:%S'
+        activities.append(
+            UserActivity(
+                service_name=activity.service_name, description=activity.description,
+                from_time=datetime.strptime(f'{day} {activity.from_time}', format),
+                to_time=datetime.strptime(f'{day} {activity.to_time}', format)
+            )
+        )
+    return activities
+
+
+async def _get_user_activities_from_services(user_id: int, conn: Any) -> List[UserActivity]:
     user = await get_user(user_id=user_id, conn=conn)
     if not user:
         raise RuntimeError('User not found')
-    hours, minutes = user.working_day_start_at.split(':')
     user_services = await _get_user_services(user_id, conn)
     activities: List[UserActivity] = []
     if user_services.vk:

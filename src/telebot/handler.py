@@ -138,8 +138,8 @@ async def process_callback_done_finish(callback_query: CallbackQuery, callback_d
     async with engine.acquire() as conn:
         await save_user_day_end_time(callback_data['user_id'], f"{time['hours']}:{time['minutes']}", conn)
     await create_task(conn, scheduler, on_workday_ends, {"telegram_id": callback_data['user_id']},
-                          time_args=f'every(1).weekday().at("{5}:{21}")', session=client_session, db=engine)
-                          # time_args=f'every(1).weekday().at("{time["hours"]}:{time["minutes"]}")', session=client_session)
+                      time_args=f'every(1).weekday().at("{time["hours"]}:{time["minutes"]}")', db=engine,
+                      session=client_session)
 
     await callback_query.message.edit_reply_markup()
     confirm_time = f"{Messages.end_time.value} {time['hours']}:{time['minutes']}"
@@ -176,7 +176,7 @@ async def process_change_work_time(message: types.Message) -> None:
 
 
 async def process_initial_start_work_time(
-    message: types.Message, state: FSMContext
+        message: types.Message, state: FSMContext
 ) -> None:
     await InitialStates.next()
     confirm_time = f'{Messages.start_time.value} {message.text}'
